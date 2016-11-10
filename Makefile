@@ -1,27 +1,22 @@
-SOURCE_FILES =        \
-	gen/lexer-tab.cc  \
-	gen/parser-tab.cc \
-	main.cc
+CXX = g++
+CXXFLAGS = -O3 -std=c++14 -Wall
+LDFLAGS = -lnixformat -lnixutil -lnixexpr -lnixmain
 
-.PHONY: all clean
+SOURCE_FILES = main.cc
 
-all: clean out/main
+.PHONY: all install clean
 
-out/main: $(SOURCE_FILES)
-	clang++ -std=c++11 -g -Wall -o out/main $(SOURCE_FILES)
+all: out/nix-parse
 
-gen/parser-tab.cc gen/parser-tab.hh: parser.y gen
-	bison -v -o gen/parser-tab.cc parser.y -d
-
-gen/lexer-tab.cc gen/lexer-tab.hh: lexer.l gen
-	flex --outfile gen/lexer-tab.cc --header-file=gen/lexer-tab.hh lexer.l
+out/nix-parse: $(SOURCE_FILES) out
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o out/nix-parse $(SOURCE_FILES)
 
 out:
 	mkdir -p out
 
-gen:
-	mkdir -p gen
-	for file in include/*; do cp "$$file" gen/; done
+install: out/nix-parse
+	mkdir -p $$out/bin
+	install out/nix-parse $$out/bin
 
 clean:
-	rm -rf gen
+	test -d out && rm -rf out
